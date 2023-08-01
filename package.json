@@ -1,0 +1,20 @@
+{
+  "name": "backend-55535",
+  "version": "1.0.0",
+  "description": "proyecto coderhouse backend",
+  "main": "ProductManager.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/francoDevv/Backend-55535-Franco-Votta.git"
+  },
+  "author": "Franco",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/francoDevv/Backend-55535-Franco-Votta/issues"
+  },
+  "homepage": "https://github.com/francoDevv/Backend-55535-Franco-Votta#readme"
+}
