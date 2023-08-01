@@ -6,7 +6,7 @@ async function readFile(file) {
         let data = await JSON.parse(resultado);
         return data;
     } catch (error) {
-        console.log(error);
+        throw new Error(error, "readFile tiene un error");
     }
 }
 
@@ -15,7 +15,7 @@ async function writeFile(file, data) {
         await fs.promises.writeFile(file, JSON.stringify(data));
         return true;
     } catch (error) {
-        console.log(error);
+        throw new Error(error, "writeFile tiene un error");
     }
 }
 
@@ -24,7 +24,7 @@ async function deleteFile(file) {
         await fs.promises.unlink(file);
         return true;
     } catch (error) {
-        console.log(error);
+        throw new Error(error, "deleteFile tiene un error");
     }
 }
 

@@ -40,7 +40,7 @@ class ProductManager { //Creamos la clase ProductManager
             try {
                 await utilidades.writeFile(this.path, this.products);
             } catch (error) {
-                console.log(error);
+               throw new Error(error, "addProduct tiene un error");
             }
         }
     };
@@ -50,7 +50,7 @@ class ProductManager { //Creamos la clase ProductManager
             let data = await utilidades.readFile(this.path);
             return data?.length < 0 ? this.products : 'No hay productos cargados';
         } catch (error) {
-            console.log(error);
+            throw new Error(error, "getProduct tiene un error");
         }
     }
 
@@ -86,7 +86,7 @@ class ProductManager { //Creamos la clase ProductManager
                 }
             }
         } catch (error) {
-            console.log(error);
+            throw new Error(error);
         }
     }
 
@@ -108,21 +108,21 @@ class ProductManager { //Creamos la clase ProductManager
                 }
             }
         } catch (error) {
-            console.log(error);
+           throw new Error(error);
         }
     }
 }
 
 const productManager = new ProductManager('products.json');
 
-// productManager // todavia no hay registros de productos
-//     .getProduct()
-//     .then((products) => {
-//         console.log(products);
-//     })
-//     .catch((error) => {
-//         console.log(error);
-//     });
+productManager // todavia no hay registros de productos
+    .getProduct()
+    .then((products) => {
+        console.log(products);
+    })
+    .catch((error) => {
+        throw new Error(error, 'no se han podido traer los productos');
+    });
 
 productManager.addProduct( // Agregamos productos de prueba
 	'producto prueba 1',
@@ -166,7 +166,7 @@ productManager // llamamos al metodo getProduct para ver los productos agregados
         console.log(products);
     })
     .catch((error) => {
-        console.log(error);
+        throw new Error(error, 'no se han podido traer los productos de prueba');
     });
 
 // productManager.addProduct(  // agregamos un producto con un codigo que ya existe
