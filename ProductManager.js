@@ -48,7 +48,7 @@ class ProductManager { //Creamos la clase ProductManager
     async getProduct() {
         try {
             let data = await utilidades.readFile(this.path);
-            return data?.length < 0 ? this.products : 'No hay productos cargados';
+            return data?.length > 0 ? this.products : 'No hay productos cargados';
         } catch (error) {
             throw new Error(error, "getProduct tiene un error");
         }
@@ -111,81 +111,91 @@ class ProductManager { //Creamos la clase ProductManager
            throw new Error(error);
         }
     }
+
+    async createFile() {
+        try {
+            await utilidades.writeFile(this.path, this.products);
+        } catch (error) {
+            throw new Error(error);
+        }       
+    }
 }
 
 const productManager = new ProductManager('products.json');
 
-productManager // todavia no hay registros de productos
-    .getProduct()
-    .then((products) => {
-        console.log(products);
-    })
-    .catch((error) => {
-        throw new Error(error, 'no se han podido traer los productos');
-    });
+await productManager.createFile(); // Creamos el archivo json
 
-productManager.addProduct( // Agregamos productos de prueba
-	'producto prueba 1',
-	'Este es un producto prueba 1',
-	100,
-	'Sin imagen',
-	'abc123',
-	25
-);
+// await productManager // todavia no hay registros de productos
+//     .getProduct()
+//     .then((products) => {
+//         console.log(products);
+//     })
+//     .catch((error) => {
+//         throw new Error(error, 'no se han podido traer los productos');
+//     });
 
-productManager.addProduct(
-	'producto prueba 2',
-	'Este es un producto prueba 2',
-	200,
-	'Sin imagen',
-	'def456',
-	5
-);
+// await productManager.addProduct( // Agregamos productos de prueba
+// 	'producto prueba 1',
+// 	'Este es un producto prueba 1',
+// 	100,
+// 	'Sin imagen',
+// 	'abc123',
+// 	25
+// );
 
-productManager.addProduct(
-    'producto prueba 3',
-    'Este es un producto prueba 3',
-    300,
-    'Sin imagen',
-    'ghi789',
-    10
-);
+// await productManager.addProduct(
+// 	'producto prueba 2',
+// 	'Este es un producto prueba 2',
+// 	200,
+// 	'Sin imagen',
+// 	'def456',
+// 	5
+// );
 
-productManager.addProduct(
-    'producto prueba 4',
-    'Este es un producto prueba 4',
-    400,
-    'Sin imagen',
-    'jkl101112',
-    15
-);
+// await productManager.addProduct(
+//     'producto prueba 3',
+//     'Este es un producto prueba 3',
+//     300,
+//     'Sin imagen',
+//     'ghi789',
+//     10
+// );
 
-productManager // llamamos al metodo getProduct para ver los productos agregados
-    .getProduct()
-    .then((products) => {
-        console.log(products);
-    })
-    .catch((error) => {
-        throw new Error(error, 'no se han podido traer los productos de prueba');
-    });
+// await productManager.addProduct(
+//     'producto prueba 4',
+//     'Este es un producto prueba 4',
+//     400,
+//     'Sin imagen',
+//     'jkl101112',
+//     15
+// );
 
-// productManager.addProduct(  // agregamos un producto con un codigo que ya existe
+// await productManager // llamamos al metodo getProduct para ver los productos agregados
+//     .getProduct()
+//     .then((products) => {
+//         console.log(products);
+//     })
+//     .catch((error) => {
+//         throw new Error(error, 'no se han podido traer los productos de prueba');
+//     });
+
+// await productManager.addProduct(  // agregamos un producto con un codigo que ya existe
 //     'producto duplicado',
 //     'Este es un producto duplicado',
 //     500,
 //     'Sin imagen',
-//     'abc123',
+//     'abc12332432',
 //     20
 // );
 
-// productManager.addProduct( // agregamos un producto sin algunos datos
+// await productManager.addProduct( // agregamos un producto sin algunos datos
 // 	'producto con falta de datos',
 // 	150,
 // 	'Sin imagen',
 // 	'12345'
 // );
 
-// productManager // llamamos al metodo getProductById para ver un producto en particular
+// await productManager // llamamos al metodo getProductById para ver un producto en particular
 // 	.getProductById(2)
 // 	.then((product) => {
 // 		console.log(product);
@@ -193,3 +203,35 @@ productManager // llamamos al metodo getProduct para ver los productos agregados
 // 	.catch((error) => {
 // 		console.log(error);
 // 	});
+
+//  await productManager
+//     .getProductById(1)
+//     .then((product) => {
+//         console.log(product);
+//     })
+//     .catch((error) => {
+//         console.log(error, 'no se ha podido traer el producto'); 
+//     })
+
+
+// const res = await productManager // llamamos al metodo updateProduct para actualizar un producto
+//     .updateProduct(1, {price: 456, stock: 50})
+// console.log(res);
+
+// await productManager // llamamos al metodo getProductById para ver el producto actualizado
+//     .getProductById(1)
+//     .then((product) => {
+//         console.log(product);
+//     })
+//     .catch((error) => {
+//         console.log(error, 'no se ha podido traer el producto'); 
+//     })
+
+// await productManager // llamamos al metodo deleteProduct para eliminar un producto
+//     .deleteProduct(1)
+//     .then(data => {
+//         console.log(data, `Eliminaste el producto : ${data.producto.title}')`);
+//     })
+//     .catch((error) => {
+//         console.log(error, 'no se ha podido eliminar el producto');
+//     })
