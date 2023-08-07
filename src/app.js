@@ -1,5 +1,5 @@
 import express  from "express";
-import utilidades from "../utilidades.js";
+import utilidades from "./utilidades.js";
 
 const app = express();
 
@@ -13,9 +13,9 @@ app.get('/', async (req, res) => {
 app.get('/products', async (req, res) => {
     try {
         const productos = await utilidades.readFile('products.json');
-        const limite= req.query.limite;
-        if (limite) {
-            const productosLimitados = productos.slice(0, limite);
+        const limit= req.query.limit;
+        if (limit) {
+            const productosLimitados = productos.slice(0, limit);
             res.json(productosLimitados);
         } else {
             res.json(productos);
