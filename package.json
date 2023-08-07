@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/francoDevv/Backend-55535-Franco-Votta/issues"
   },
-  "homepage": "https://github.com/francoDevv/Backend-55535-Franco-Votta#readme"
+  "homepage": "https://github.com/francoDevv/Backend-55535-Franco-Votta#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
 }
