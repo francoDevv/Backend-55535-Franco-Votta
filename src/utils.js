@@ -1,4 +1,9 @@
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path'
+
+const __fileName = fileURLToPath(import.meta.url);
+const __dirname = dirname(__fileName);
 
 async function readFile(file) {
     try {
@@ -7,8 +12,8 @@ async function readFile(file) {
         return data;
     } catch (error) {
         throw new Error(error, "readFile tiene un error");
-    }
-}
+    }    
+}    
 
 async function writeFile(file, data) {
     try {
@@ -16,8 +21,8 @@ async function writeFile(file, data) {
         return true;
     } catch (error) {
         throw new Error(error, "writeFile tiene un error");
-    }
-}
+    }    
+}    
 
 async function deleteFile(file) {
     try {
@@ -25,7 +30,8 @@ async function deleteFile(file) {
         return true;
     } catch (error) {
         throw new Error(error, "deleteFile tiene un error");
-    }
-}
+    }    
+}    
 
-export default { readFile, writeFile, deleteFile };
+
+export default { readFile, writeFile, deleteFile, __dirname };

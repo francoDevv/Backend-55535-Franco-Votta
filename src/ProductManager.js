@@ -1,4 +1,4 @@
-import utilidades from './utilidades.js'; // Importamos el modulo utilidades
+import utilidades from './utils.js'; // Importamos el modulo utilidades
 
 class ProductManager { //Creamos la clase ProductManager
     products;
