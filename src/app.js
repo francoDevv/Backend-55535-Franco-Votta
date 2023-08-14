@@ -8,10 +8,10 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/static', express.static(__dirname + 'public'));
+app.use('/static',express.static(`${__dirname}/public`));
 
-app.use('/api/products', productsRouter);
-app.use('/api/carts', cartsRouter);
+app.use('/products', productsRouter);
+app.use('/carts', cartsRouter);
 
 app.get('/', async (req, res) => {
     await res.send('Server ON');

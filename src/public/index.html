@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso Backend</title>
+</head>
+<body>
+    <h1>Formulario de ingreso de productos</h1>
+    <form action="/api/products" method="post">
+        <label for="">TITLE</label>
+        <input type="text" name="title" required>
+        <label for="">DESCRIPTION</label>
+        <input type="text" name="description" required>
+        <label for="">CODE</label>
+        <input type="text" name="code" required>
+        <label for="">PRICE</label>
+        <input type="text" name="price" required>
+        <label for="">STOCK</label>
+        <input type="text" name="stock" required>
+        <label for="">CATEGORY</label>
+        <input type="text" name="category" required>
+        <label for="">THUMBNAILS</label>
+        <input type="file" name="thumbnails" required>
+        <button type="submit">Enviar</button>
+    </form>
+</body>
+</html>
