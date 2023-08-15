@@ -1,4 +1,5 @@
 import {Router} from 'express';
+import utils from '../utils.js';
 
 const router = Router();
 
@@ -11,13 +12,51 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
         const order = await req.body;
-        const newCart = {
-            id: cart.length + 1,
-            products: [],
-        }
-        cart.push(newCart);
+        const cartList = await utils.readFile('carrito.json');
+        const newCart = [
+            {
+                id: cartList.length + 1,
+                products: [],
+            }
+        ]
+        cartList.push(newCart);
+        await utils.writeFile('carrito.json', cartList);
+        await res.send(newCart);
     } catch (error) {
         console.error(error, 'Error en la ruta api/carts/post');
+    }
+});
+
+router.get('/:cid', async (req, res) => {
+    try {
+        const id = +req.params.cid;
+        const cartList = await utils.readFile('carrito.json');
+        const cart = cartList.find((cart) => cart.id === +req.params.cid);
+        if (cart) {
+            await res.send(cart);
+        } else {
+            await res.send('No existe el carrito');
+        }
+    } catch (error) {
+        console.error(error, 'Error en la ruta api/carts/:cid');
+    }
+});
+
+router.post('/:cid/product/:pid', async (req, res) => {
+    try{
+        const cartId = await req.params.cid;
+        const productId = await req.params.pid;
+        const cartList = await utils.readFile('carrito.json');
+        const cart = cartList.find((cart) => cart.id === +req.params.cid);
+        const newProductCart = {
+            id: +req.params.pid,
+            quantity: +1,
+        }
+        cart.products.push(newProductCart);
+        await utils.writeFile('carrito.json', cart);
+        await res.send(cart);
+    } catch (error) {
+        console.error(error, 'Error en la ruta api/carts/:cid/product/:pid');
     }
 });
 
