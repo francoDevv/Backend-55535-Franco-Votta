@@ -2,7 +2,7 @@
   "name": "backend-55535",
   "version": "1.0.0",
   "description": "proyecto coderhouse backend",
-  "main": "ProductManager.js",
+  "main": "./src/app.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

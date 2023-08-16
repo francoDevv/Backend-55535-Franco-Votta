@@ -13,12 +13,11 @@ router.post('/', async (req, res) => {
     try {
         const order = await req.body;
         const cartList = await utils.readFile('carrito.json');
-        const newCart = [
+        const newCart = 
             {
                 id: cartList.length + 1,
                 products: [],
             }
-        ]
         cartList.push(newCart);
         await utils.writeFile('carrito.json', cartList);
         await res.send(newCart);
@@ -43,20 +42,36 @@ router.get('/:cid', async (req, res) => {
 });
 
 router.post('/:cid/product/:pid', async (req, res) => {
-    try{
+    // try{
+    //     const cartId = await req.params.cid;
+    //     const productId = await req.params.pid;
+    //     const cartList = await utils.readFile('carrito.json');
+    //     const cart = cartList.find((cart) => cart.id === +req.params.cid);
+    //     const newProductCart = {
+    //         id: +req.params.pid,
+    //         quantity: +1,
+    //     }
+    //     cart.products.push(newProductCart);
+    //     await utils.writeFile('carrito.json', cart);
+    //     await res.send(cart);
+    // } catch (error) {
+    //     console.error(error, 'Error en la ruta api/carts/:cid/product/:pid');
+    // }
+    try {
         const cartId = await req.params.cid;
         const productId = await req.params.pid;
+        const {id, quantity} = await req.body;
         const cartList = await utils.readFile('carrito.json');
-        const cart = cartList.find((cart) => cart.id === +req.params.cid);
+        const cart = cartList.find((cartId) => cartId === +req.params.cid);
         const newProductCart = {
             id: +req.params.pid,
             quantity: +1,
         }
-        cart.products.push(newProductCart);
+        cart.push(newProductCart);
         await utils.writeFile('carrito.json', cart);
         await res.send(cart);
     } catch (error) {
-        console.error(error, 'Error en la ruta api/carts/:cid/product/:pid');
+        console.error(error, 'Error en la ruta /carts/:cid/product/:pid');
     }
 });
 
