@@ -6,7 +6,7 @@ const router = Router();
 const cart = [];
 
 router.get('/', async (req, res) => {
-    await res.send('Servidor ON from carts');
+     res.send('Servidor ON from carts');
 });
 
 router.post('/', async (req, res) => {
@@ -20,7 +20,7 @@ router.post('/', async (req, res) => {
             }
         cartList.push(newCart);
         await utils.writeFile('carrito.json', cartList);
-        await res.send(newCart);
+        res.send(newCart);
     } catch (error) {
         console.error(error, 'Error en la ruta api/carts/post');
     }
@@ -32,9 +32,9 @@ router.get('/:cid', async (req, res) => {
         const cartList = await utils.readFile('carrito.json');
         const cart = cartList.find((cart) => cart.id === +req.params.cid);
         if (cart) {
-            await res.send(cart);
+         res.send(cart);
         } else {
-            await res.send('No existe el carrito');
+             res.send('No existe el carrito');
         }
     } catch (error) {
         console.error(error, 'Error en la ruta api/carts/:cid');
@@ -42,43 +42,40 @@ router.get('/:cid', async (req, res) => {
 });
 
 router.post('/:cid/product/:pid', async (req, res) => {
-    // try{
-    //     const cartId = await req.params.cid;
-    //     const productId = await req.params.pid;
-    //     const cartList = await utils.readFile('carrito.json');
-    //     const cart = cartList.find((cart) => cart.id === +req.params.cid);
-    //     const newProductCart = {
-    //         id: +req.params.pid,
-    //         quantity: +1,
-    //     }
-    //     cart.products.push(newProductCart);
-    //     await utils.writeFile('carrito.json', cart);
-    //     await res.send(cart);
-    // } catch (error) {
-    //     console.error(error, 'Error en la ruta api/carts/:cid/product/:pid');
-    // }
     try {
-        const cartId = await req.params.cid;
-        const productId = await req.params.pid;
-        const {id, quantity} = await req.body;
+        const cartId =  +req.params.cid;
+        const productId = +req.params.pid;
+        const {quantity} = req.body;
         const cartList = await utils.readFile('carrito.json');
-        const cart = cartList.find((cartId) => cartId === +req.params.cid);
-        const newProductCart = {
-            id: +req.params.pid,
-            quantity: +1,
+        const cartIndex = cartList.findIndex((cartItem) => cartItem.id === cartId); 
+        if (cartIndex === -1) {
+            res.status(404).send('Carrito no encontrado');
+            return;
         }
-        cart.push(newProductCart);
-        await utils.writeFile('carrito.json', cart);
-        await res.send(cart);
+        const cart = cartList[cartIndex];
+    
+        if (!cart || !cart.products) {
+            res.status(404).send('Carrito no encontrado');
+            return;
+        }
+    
+        const existingProduct = cart.products.find((product) => product.id === productId);
+    
+        if(existingProduct){
+            existingProduct.quantity += quantity;
+        }else{
+            const newProductCart = {
+                id: productId,
+                quantity: quantity,
+            };
+            cart.products.push(newProductCart)
+        }
+        await utils.writeFile('carrito.json', cartList);
+        res.send(cart);
     } catch (error) {
         console.error(error, 'Error en la ruta /carts/:cid/product/:pid');
+        res.status(500).send('Error en el servidor');
     }
 });
 
 export default router;
-
-/*
-        const cart= await req.body;
-        cart.push(product);
-        await res.send(cart);
-*/
