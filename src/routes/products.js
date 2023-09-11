@@ -1,97 +1,108 @@
-import {Router} from 'express';
-import utils from '../utils.js';
+import { Router } from "express";
+import ProductManager from "../dao/managerMongo/productManager.js";
 
-const router = Router();
+const productsRouter = Router();
+const PM = new ProductManager();
 
-router.get('/', async (req, res) => {
-    try {
-        const productsList = await utils.readFile('products.json');
-        const limit = req.query.limit;
-        if (limit) {
-            const productsListLimited = productsList.slice(0, limit);
-            res.json(productsListLimited);
-        } else {
-            res.json(productsList);
-        }
-    }catch (error) {
-        console.error(error, 'Error en la ruta /api/products/');
-    }
+//creo el endpoint /products y /products?limit=n
+productsRouter.get("/", async (req, res) => {
+  const products = await PM.getProducts();
+  let limit = +req.query.limit;
+  res.send({ Products: limit ? products.slice(0, limit) : products });
 });
 
-router.get('/:pid', async (req, res) => {
-    try {
-        const productsList = await utils.readFile('products.json');
-        const id = +req.params.pid;
-        const product = productsList.find((product) => product.id === +req.params.pid);
-        if (product) {
-            await res.send(product);
-        } else {
-            await res.send('No existe el producto');
-        }
-    } catch (error) {
-        console.error(error, 'Error en la ruta api/products/:pid');
-    }
+//creo el endpoint POST raiz
+productsRouter.post("/", async (req, res) => {
+  let { title, description, code, price, status, stock, category, thumbnails } =
+    req.body;
+
+  //valido que todos los campos sean obligatorios y correctos
+  if (!title) {
+    return res
+      .status(400)
+      .send({ status: "error", message: "The 'title' is a mandatory field" });
+  } else if (!description) {
+    return res
+      .status(400)
+      .send({
+        status: "error",
+        message: "The 'description' is a mandatory field",
+      });
+  } else if (!code) {
+    return res
+      .status(400)
+      .send({ status: "error", message: "The 'code' is a mandatory field" });
+  } else if (!price) {
+    return res
+      .status(400)
+      .send({ status: "error", message: "The 'price' is a mandatory field" });
+  } else if (!status) {
+    return res
+      .status(400)
+      .send({ status: "error", message: "The 'status' is a mandatory field" });
+  } else if (!category) {
+    return res
+      .status(400)
+      .send({
+        status: "error",
+        message: "The 'category' is a mandatory field",
+      });
+  }
+
+  //agrego el producto
+  const result = await PM.addProduct({
+    title,
+    description,
+    code,
+    price,
+    status,
+    stock,
+    category,
+    thumbnails,
+  });
+  if (result) {
+    res.send({ status: "success", message: "Product added successfully" });
+  } else {
+    res
+      .status(500)
+      .send({ status: "error", message: "Error! Product could not be added!" });
+  }
 });
 
-router.post('/', async (req, res) => {
-    try {
-        const product = await req.body;
-        const productsList = await utils.readFile('products.json');
-        const newProduct = {
-            id: productsList.length + 1,
-            title: product.title,
-            description: product.description,
-            code: product.code,
-            price: product.price,
-            status: true,
-            stock: product.stock,
-            category: product.category,
-            thumbnail: product.thumbnail,
-        };
-        productsList.push(newProduct);
-        await utils.writeFile('products.json', productsList);
-        await res.send(newProduct);
-    } catch (error) {
-        console.error(error, 'Error en la ruta api/products/post');
-    }
+//creo el endpoint /products/id como parametro
+productsRouter.get("/:pid", async (req, res) => {
+  const id = req.params.pid;
+  const result = await PM.getProductById(id);
+  res.send({ Product: result });
 });
 
-router.put('/:pid', async (req, res) => {
-    try {
-        const id = +req.params.pid;
-        const product = await req.body;
-        const productsList = await utils.readFile('products.json');
-        const productIndex = productsList.findIndex((product) => product.id === id);
-        const productUpdated = {
-            id: id,
-            title: product.title,
-            description: product.description,
-            code: product.code,
-            price: product.price,
-            status: true,
-            stock: product.stock,
-            category: product.category,
-            thumbnail: product.thumbnail,
-        }
-        productsList[productIndex] = productUpdated;
-        await utils.writeFile('products.json', productsList);
-        await res.send(productUpdated);
-    } catch(error) {
-        console.error(error, 'Error en la ruta api/products/put');
-    }
+productsRouter.put("/:pid", async (req, res) => {
+  const id = req.params.pid;
+  const product = req.body;
+  //actualizo el producto
+  const result = await PM.updateProduct(id, product);
+  if (result) {
+    res.send({ status: "success", message: "Product updated successfully" });
+  } else {
+    res.status(500).send({
+      status: "error",
+      message: "Error! Product could not be updated!",
+    });
+  }
 });
 
-router.delete('/:pid', async (req, res) => {
-    try {
-        const id = +req.params.pid;
-        const productsList = await utils.readFile('products.json');
-        const productIndex = productsList.findIndex((product) => product.id === id);
-        productsList.splice(productIndex, 1);
-        await utils.writeFile('products.json', productsList);
-        await res.send('Producto eliminado');
-    } catch (error) {
-        console.error(error, 'Error en la ruta api/products/delete');
-    }
+productsRouter.delete("/:pid", async (req, res) => {
+  const id = req.params.pid;
+  const result = await PM.deleteProduct(id);
+  //elimino el producto
+  if (result) {
+    res.send({ status: "success", message: "Product deleted successfully" });
+  } else {
+    res.status(500).send({
+      status: "error",
+      message: "Error! Product could not be deleted!",
+    });
+  }
 });
 
-export default router;
+export default productsRouter;

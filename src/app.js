@@ -1,95 +1,91 @@
-import express  from "express";
-import __dirname from "./utils.js";
-import productsRouter from "./routes/products.js";
+import express from "express";
+import handlebars from "express-handlebars";
+import mongoose from "mongoose";
+import utils from "./utils.js";
+import path from 'path'
+
 import cartsRouter from "./routes/carts.js";
+import productsRouter from "./routes/products.js";
+import viewsRouter from "./routes/views.js";
 
-
-const app = express();
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use('/static',express.static(`${__dirname}/public`));
-
-app.use('/products', productsRouter);
-app.use('/carts', cartsRouter);
-
-app.get('/', async (req, res) => {
-    await res.send('Server ON');
-});
-
-const server = app.listen(8080, () => {
-    console.log('Server ON');
-});
-
-/*
-app.get('/products', async (req, res) => {
-    try {
-        const productos = await utilidades.readFile('products.json');
-        const limit= req.query.limit;
-        if (limit) {
-            const productosLimitados = productos.slice(0, limit);
-            res.json(productosLimitados);
-        } else {
-            res.json(productos);
-        }
-    } catch (error) {
-        console.log(error, 'Error en la ruta /products');
-    }
-})
-
-app.get('/products/:pid', async (req, res) => {
-    try {
-        const productos = await utilidades.readFile('products.json');
-        const id = +req.params.pid;
-        const producto = productos.find((producto) => producto.id === +req.params.pid);
-        if (producto) {
-            await res.send(producto);
-        } else {
-            await res.send('No existe el producto');
-        }
-    } catch (error) {
-        console.log(error, 'Error en la ruta /products/:pid');
-    }
-});
-import express  from "express";
-import utilidades from "./utilidades.js";
+import { Server } from "socket.io";
+import ProductManager from "./dao/managerMongo/productManager.js";
+import ChatManager from "./dao/managerMongo/chatManager.js";
 
 const app = express();
+const port = 8080;
 
+const PM = new ProductManager();
+const CM = new ChatManager();
+
+//#Handlebars
+app.engine('handlebars', handlebars.engine());
+app.set('views', path.join(utils.__dirname, 'views'));
+app.set('view engine', 'handlebars');
+
+//#Express
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(utils.__dirname, 'public')));
 
-app.get('/', async (req, res) => {
-        await res.send('Servidor ON');
+//#Routes
+app.use("/", viewsRouter);
+app.use("/api/products", productsRouter);
+app.use("/api/carts", cartsRouter);
+
+//#MongoDB
+mongoose.connect(
+  'mongodb+srv://francoDevv:123456QWE@clustercursobackend.gu8vmf7.mongodb.net/ecommerce'
+);
+
+//levanto el servidor en el puerto indicado
+const httpServer = app.listen(port, () =>
+  console.log(`Server ON - http://localhost:${port}`)
+);
+
+const io = new Server(httpServer);
+io.on("connection", async (socket) => {
+  //#Real Time Products
+  console.log("New connection");
+  //obtengo todos los productos
+  const products = await PM.getProducts();
+  socket.emit("realTimeProducts", products);
+
+  //Escucho evento newProduct
+  socket.on("newProduct", async (data) => {
+    const product = {
+      title: data.title,
+      description: data.description,
+      code: data.code,
+      price: data.price,
+      status: true,
+      stock: 10,
+      category: "",
+      thumbnails: data.thumbnails,
+    };
+    //creo el producto
+    await PM.addProduct(product);
+    //obtengo todos los productos nuevamente
+    const products = await PM.getProducts();
+    socket.emit("realTimeProducts", products);
+  });
+
+  //Escucho evento deleteProduct
+  socket.on("deleteProduct", async (data) => {
+    await PM.deleteProduct(data);
+    //obtengo todos los productos nuevamente
+    const products = await PM.getProducts();
+    socket.emit("realTimeProducts", products);
+  });
+
+  //#Chat Ecommerce
+  socket.on("newChatUser", (data) => {
+    socket.broadcast.emit("newChatUser", data + " has joined the chat");
+  });
+
+  socket.on("newMessage", async (data) => {
+    await CM.createMessage(data);
+    const messages = await CM.getMessages();
+    io.emit("messages", messages);
+  });
 });
-
-app.get('/products', async (req, res) => {
-    try {
-        const productos = await utilidades.readFile('products.json');
-        const limit= req.query.limit;
-        if (limit) {
-            const productosLimitados = productos.slice(0, limit);
-            res.json(productosLimitados);
-        } else {
-            res.json(productos);
-        }
-    } catch (error) {
-        console.log(error, 'Error en la ruta /products');
-    }
-})
-
-app.get('/products/:pid', async (req, res) => {
-    try {
-        const productos = await utilidades.readFile('products.json');
-        const id = +req.params.pid;
-        const producto = productos.find((producto) => producto.id === +req.params.pid);
-        if (producto) {
-            await res.send(producto);
-        } else {
-            await res.send('No existe el producto');
-        }
-    } catch (error) {
-        console.log(error, 'Error en la ruta /products/:pid');
-    }
-});
-*/

@@ -1,81 +1,56 @@
-import {Router} from 'express';
-import utils from '../utils.js';
+import { Router } from "express";
+import CartManager from "../dao/managerMongo/cartManager.js";
 
-const router = Router();
+const cartsRouter = Router();
+const CM = new CartManager();
 
-const cart = [];
-
-router.get('/', async (req, res) => {
-     res.send('Servidor ON from carts');
+//Solamente enviando POST a la raiz debe crear un carrito vacio
+cartsRouter.post("/", async (req, res) => {
+  const result = await CM.newCart();
+  if (result) {
+    res.send({ status: "success", message: "Cart created successfully!" });
+  } else {
+    res.status(500).send({
+      status: "error",
+      message: "Error! The Cart could not be created",
+    });
+  }
 });
 
-router.post('/', async (req, res) => {
-    try {
-        const order = await req.body;
-        const cartList = await utils.readFile('carrito.json');
-        const newCart = 
-            {
-                id: cartList.length + 1,
-                products: [],
-            }
-        cartList.push(newCart);
-        await utils.writeFile('carrito.json', cartList);
-        res.send(newCart);
-    } catch (error) {
-        console.error(error, 'Error en la ruta api/carts/post');
-    }
+// get Cart por cid
+cartsRouter.get("/:cid", async (req, res) => {
+  const cid = req.params.cid;
+  const cart = await CM.getCartById(cid);
+  if (!cart) {
+    res
+      .status(400)
+      .send({ status: "error", message: "The Cart does not exists" });
+    return;
+  }  res.send({ products: cart.products });
 });
 
-router.get('/:cid', async (req, res) => {
-    try {
-        const id = +req.params.cid;
-        const cartList = await utils.readFile('carrito.json');
-        const cart = cartList.find((cart) => cart.id === +req.params.cid);
-        if (cart) {
-         res.send(cart);
-        } else {
-             res.send('No existe el carrito');
-        }
-    } catch (error) {
-        console.error(error, 'Error en la ruta api/carts/:cid');
-    }
+//agrega productos al arreglo seleccionado
+cartsRouter.post("/:cid/product/:pid", async (req, res) => {
+  const cid = req.params.cid;
+  const pid = req.params.pid;
+  const cart = await CM.getCartById(cid);
+  if (!cart) {res.status(400).send({ status: "error", message: "The Cart does not exists" });
+    return;
+  }
+  const result = await CM.addProductToCart(cid, pid);
+  if (result) {
+    res.send({
+      status: "success",
+      message: `Product ${pid} successfully added to Cart ${cid}`,
+    });
+  } else {
+    res
+      .status(500)
+      .send({
+        statu: "error",
+        message: `Error! The product could not be added to the Cart ${cid}`,
+      });
+  }
 });
 
-router.post('/:cid/product/:pid', async (req, res) => {
-    try {
-        const cartId =  +req.params.cid;
-        const productId = +req.params.pid;
-        const {quantity} = req.body;
-        const cartList = await utils.readFile('carrito.json');
-        const cartIndex = cartList.findIndex((cartItem) => cartItem.id === cartId); 
-        if (cartIndex === -1) {
-            res.status(404).send('Carrito no encontrado');
-            return;
-        }
-        const cart = cartList[cartIndex];
-    
-        if (!cart || !cart.products) {
-            res.status(404).send('Carrito no encontrado');
-            return;
-        }
-    
-        const existingProduct = cart.products.find((product) => product.id === productId);
-    
-        if(existingProduct){
-            existingProduct.quantity += quantity;
-        }else{
-            const newProductCart = {
-                id: productId,
-                quantity: quantity,
-            };
-            cart.products.push(newProductCart)
-        }
-        await utils.writeFile('carrito.json', cartList);
-        res.send(cart);
-    } catch (error) {
-        console.error(error, 'Error en la ruta /carts/:cid/product/:pid');
-        res.status(500).send('Error en el servidor');
-    }
-});
-
-export default router;
+export default cartsRouter;

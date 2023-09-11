@@ -1,0 +1,40 @@
+<h1>Real Time</h1>
+
+<h2>CREAR PRODUCTO</h2>
+<form id='formPost'>
+	<h2></h2>
+	<input type='text' name='title' id='title' placeholder='Title' required />
+	<input
+		type='text'
+		name='description'
+		id='description'
+		placeholder='Description'
+		required
+	/>
+	<input type='number' name='stock' id='stock' placeholder='Stock' required />
+	<input type='number' name='price' id='price' placeholder='Price' required />
+	<input
+		type='text'
+		name='thumbnail'
+		id='thumbnail'
+		placeholder='Thumbnail'
+		required
+	/>
+	<input type='text' name='code' id='code' placeholder='Code' required />
+	<button type='submit' id='add-prod-btn'>CREAR</button>
+</form>
+
+<h2>ELIMINAR PRODUCTO</h2>
+<p>Debes pasar el id del producto que quieras eliminar</p>
+<form id='formDelete'>
+	<input type='number' name='id-prod' id='id-prod' placeholder="ID"/>
+	<button type='button' id='delete-prod-btn'>ELIMINAR</button>
+</form>
+
+<h2>LISTADO DE PRODUCTOS</h2>
+<section id='listProducts'>
+
+</section>
+
+<script src='socket.io/socket.io.js'></script>
+<script src='/js/realTime.js'></script>
