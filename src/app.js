@@ -1,32 +1,35 @@
 import express from "express";
 import handlebars from "express-handlebars";
 import mongoose from "mongoose";
-import utils from "./utils.js";
-import path from 'path'
+import __dirname from "./utils.js";
+import dotenv from "dotenv"; //para usar variables de entorno
+
 
 import cartsRouter from "./routes/carts.js";
 import productsRouter from "./routes/products.js";
 import viewsRouter from "./routes/views.js";
 
 import { Server } from "socket.io";
-import ProductManager from "./dao/managerMongo/productManager.js";
-import ChatManager from "./dao/managerMongo/chatManager.js";
+import ProductManager from "./dao/managers/productManager.js";
+import ChatManager from "./dao/managers/chatManager.js";
 
+// Carga las variables de entorno desde el archivo .env
+dotenv.config();
 const app = express();
-const port = 8080;
+const port = process.env.PORT ||8080;
 
 const PM = new ProductManager();
 const CM = new ChatManager();
 
 //#Handlebars
-app.engine('handlebars', handlebars.engine());
-app.set('views', path.join(utils.__dirname, 'views'));
-app.set('view engine', 'handlebars');
+app.engine("handlebars", handlebars.engine());
+app.set("view engine", "handlebars");
+app.set("views", __dirname + "/views");
 
 //#Express
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(utils.__dirname, 'public')));
+app.use(express.urlencoded({ extended: true })); //Parsea el body de la request
+app.use(express.static(__dirname + "/public"));
 
 //#Routes
 app.use("/", viewsRouter);
@@ -34,9 +37,7 @@ app.use("/api/products", productsRouter);
 app.use("/api/carts", cartsRouter);
 
 //#MongoDB
-mongoose.connect(
-  'mongodb+srv://francoDevv:123456QWE@clustercursobackend.gu8vmf7.mongodb.net/ecommerce'
-);
+mongoose.connect(process.env.MONGODB_URI);
 
 //levanto el servidor en el puerto indicado
 const httpServer = app.listen(port, () =>
@@ -48,9 +49,9 @@ io.on("connection", async (socket) => {
   //#Real Time Products
   console.log("New connection");
   //obtengo todos los productos
-  const products = await PM.getProducts();
-  socket.emit("realTimeProducts", products);
-
+  const products = await PM.getProducts('');
+  socket.emit("realTimeProducts", products.payload);
+  
   //Escucho evento newProduct
   socket.on("newProduct", async (data) => {
     const product = {
@@ -66,16 +67,16 @@ io.on("connection", async (socket) => {
     //creo el producto
     await PM.addProduct(product);
     //obtengo todos los productos nuevamente
-    const products = await PM.getProducts();
-    socket.emit("realTimeProducts", products);
+    const products = await PM.getProducts('');
+    socket.emit("realTimeProducts", products.payload);
   });
 
   //Escucho evento deleteProduct
   socket.on("deleteProduct", async (data) => {
     await PM.deleteProduct(data);
     //obtengo todos los productos nuevamente
-    const products = await PM.getProducts();
-    socket.emit("realTimeProducts", products);
+    const products = await PM.getProducts('');
+    socket.emit("realTimeProducts", products.payload);
   });
 
   //#Chat Ecommerce

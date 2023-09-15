@@ -1,0 +1,38 @@
+<div class="container-fluid vh-100">
+    <div class="row">
+        <h1 class="text-center fw-bold text-dark mt-4">Carrito Ecommerce</h1>
+       <div class="col">
+       
+       <table class="table">
+        <thead>
+                <tr>
+                  <th scope="col">Imagen</th>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Unidades/Precio</th>
+                  <th scope="col">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody id="products">
+            {{#each cart.products}}
+                <tr>
+                <td><img src="{{this.product.thumbnails}}" alt="{{this.product.title}}" width="50" /></td>
+                <td>{{this.product.title}}</td>
+                <td>{{this.quantity}} x ${{this.product.price}}</td>
+                <td >$
+                    {{!-- {{#with this}}
+                        {{multiply this.quantity this.product.price}}
+                    {{/with}} --}}
+                  </td>
+                <td class="text-end"><button class="btn btn-secondary" title="Eliminar Producto">X</button></td>
+                </tr>
+            {{/each}}
+        <tr>
+            <td colspan="3">Total a Pagar</td>
+            <td>$xxx</td>
+            <td>&nbsp;</td>
+        </tr>
+        </table>
+       </div>
+    </div>
+</div>
+{{!-- <script src="/js/carts.js"></script> --}}

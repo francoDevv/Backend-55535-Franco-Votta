@@ -1,14 +1,14 @@
 import { Router } from "express";
-import ProductManager from "../dao/managerMongo/productManager.js";
+import ProductManager from "../dao/managers/productManager.js";
 
 const productsRouter = Router();
 const PM = new ProductManager();
 
-//creo el endpoint /products y /products?limit=n
+//creo el endpoint /products y /products?limit=n?page=n?query=category:Papelería?sort=asc
+
 productsRouter.get("/", async (req, res) => {
-  const products = await PM.getProducts();
-  let limit = +req.query.limit;
-  res.send({ Products: limit ? products.slice(0, limit) : products });
+  const products = await PM.getProducts(req.query);
+  res.send({ products });
 });
 
 //creo el endpoint POST raiz

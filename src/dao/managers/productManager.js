@@ -1,4 +1,7 @@
 import { productModel } from "../models/product.js";
+import dotenv from "dotenv";
+dotenv.config();
+const port = process.env.PORT || 8080;
 
 class ProductManager {
   //#Create
@@ -19,13 +22,35 @@ class ProductManager {
     }
   }
   //#Read
-  async getProducts(limit) {
-    return await limit ? productModel.find().limit(limit).lean(): productModel.find().lean();//lean() devuelve un objeto literal de JS y no un objeto de mongoose
+  async getProducts(params) {
+    let { limit, page, query, sort } = params;
+    limit = limit ? parseInt(limit) : 10;
+    page = page ? parseInt(page) : 1;
+    sort = sort ? sort == "asc" ? 1 : -1 : 0;// 0 = no sort, 1 = asc, -1 = desc
+
+  //recibo querys de la forma ?query=category:Papelería y la convierto en un objeto de la forma {category: "Papelería"}
+    if (query) {
+      query = query.split(":");
+      query = { [query[0]]: query[1] };
+    }else{
+      query = {};
+    }
+    
+    let products = await productModel.paginate(query, {limit:limit, page:page, sort:{price:sort},lean:true});//lean:true para que devuelva un objeto plano y no un documento de mongoose
+    
+    let status = products  ? "success" : "error";
+
+    let prevLink = products.hasPrevPage ? `http://localhost:${port}/products?limit=${limit}&page=${products.prevPage}`: null;
+    let nextLink = products.hasNextPage ? `http://localhost:${port}/products?limit=${limit}&page=${products.nextPage}`: null;
+
+    products = {status:status, payload:products.docs, totalPages:products.totalPages, prevPage:products.prevPage, nextPage:products.nextPage, page:products.page, hasPrevPage:products.hasPrevPage, hasNextPage:products.hasNextPage, prevLink:prevLink, nextLink:nextLink};
+
+    return products;
   }
 
   async getProductById(id) {
     if (this.validateId(id)) {
-       return await productModel.findOne({_id:id}).lean() || null;
+      return (await productModel.findOne({ _id: id }).lean()) || null;
     } else {
       console.log("Not found!");
 

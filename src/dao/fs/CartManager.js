@@ -1,97 +1,64 @@
-import utils from '../utils.js';
+import fs from "fs";
 
 class CartManager {
-	constructor() {
-		this.cart = [];
-		this.path = './src/Json/carrito.json';
-		this.id = 1;
-	}
-	//recorre los productos que existen en el json para evitar subidas duplicadas
-	async initialize() {
-		try {
-			await utils.accessFile(this.path);
+  //defino el constructor
+  constructor() {
+    this.carts = [];
+    this.path = "Carts.json";
+    this.createFile();
+  }
+  //inicializo el Carts.json con un metodo createFile()
+  createFile() {
+    if (!fs.existsSync(this.path)) {
+      this.saveCartsInJSON();
+    }
+  }
 
-			const productsCartParse = await this.getCart();
-			if (productsCartParse.length !== 0) {
-				const productsCartParse = await this.getCart();
-				this.cart = productsCartParse;
-				CartManager.id = Math.max(...this.cart.map((item) => item.id)) + 1;
-			}
-		} catch (error) {
-			// Si el archivo no existe, lo creo con un array vacío
-			await this.createFile();
-			throw new Error('Error al leer el archivo de productos' + error.message);
-		}
-	}
+  //Método newCart
+  newCart() {
+    //genero el id
+    this.carts = this.getCarts();
+    let id = this.carts.length + 1;
+    this.carts.push({ id, products: [] });
+    this.saveCartsInJSON();
+    return true; //respuesta al endpoint
+  }
 
-	async getCart() {
-		try {
-			const getCartParse = await utils.readFile(this.path);
-			return getCartParse;
-		} catch (error) {
-			throw new Error('Error al obtener el carrito: ' + error.message);
-		}
-	}
+  //Método getCarts
+  getCarts() {
+    this.carts = JSON.parse(fs.readFileSync(this.path, "utf-8"));
+    return this.carts;
+  }
 
-	async newOrder() {
-		try {
-			const order = {
-				id: CartManager.id++,
-				products: [],
-			};
+  //Método getCartById
+  getCartById(id) {
+    const carts = this.getCarts();
+    return carts.find((cart) => cart.id === id) || console.error("Not found");
+  }
 
-			this.cart.push(order);
-			await this.createFile();
+  addProductToCart(cid, pid) {
+    this.carts = this.getCarts();
+    const cart = this.carts.find((cart) => cart.id === cid);
+    if (!cart) {
+      return false;
+    }
 
-			return order;
-		} catch (error) {
-			throw new Error('Error al crear una nueva orden: ' + error.message);
-		}
-	}
+    let product = cart.products.find((prod) => prod.product === pid);
 
-	async createFile() {
-		try {
-			await utils.writeFile(this.path, this.cart);
-		} catch (error) {
-			throw new Error(
-				'Error al crear el archivo del carrito: ' + error.message
-			);
-		}
-	}
+    //si el producto ya existe en el carrito seleccionado
+    if (product) {
+      product.quantity += 1;
+    } else {
+      cart.products.push({ product: pid, quantity: 1 });
+    }
+    this.saveCartsInJSON();
+    console.log("Cart updated!");
+    return true; //respuesta para el endpoint
+  }
 
-	async getOrderById(id) {
-		try {
-			const readParse = await this.getCart();
-			const getOrderById = readParse.find((item) => item.id === id);
-
-			if (!getOrderById) {
-				return undefined;
-			}
-			const products = getOrderById.products;
-			return products;
-		} catch (error) {
-			throw new Error('Error al obtener la orden por ID: ' + error.message);
-		}
-	}
-
-	async addProductToCart(cid, pid) {
-		try {
-			const order = this.cart.find((item) => item.id === cid);
-			const exist = order.products.find((item) => item.id === pid);
-
-			if (!exist) {
-				order.products.push({ id: pid, quantity: 1 });
-			} else {
-				exist.quantity++;
-			}
-
-			await this.createFile();
-		} catch (error) {
-			throw new Error(
-				'Error al agregar el producto al carrito: ' + error.message
-			);
-		}
-	}
+  saveCartsInJSON() {
+    fs.writeFileSync(this.path, JSON.stringify(this.carts));
+  }
 }
 
 export default CartManager;
